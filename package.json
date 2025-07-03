@@ -32,7 +32,7 @@
   },
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -b main -d dist",
+    "deploy": "gh-pages -d dist",
     "predev": "rimraf .parcel-cache dist",
     "dev": "parcel src/index.html",
     "build": "parcel build src/index.html",

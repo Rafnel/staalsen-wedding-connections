@@ -35,7 +35,7 @@ function InfoModal() {
         <AccordionItem value="item-3">
           <AccordionTrigger>How Many Tries Do I Get?</AccordionTrigger>
           <AccordionContent>
-            {`You can make ${MAX_MISTAKES} mistakes before the game ends.`}
+            You have infinite tries but you will be ranked on the leaderboard by the number of mistakes you make. The fewer mistakes, the better your score!
           </AccordionContent>
         </AccordionItem>
       </Accordion>

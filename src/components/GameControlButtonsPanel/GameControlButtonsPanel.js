@@ -17,7 +17,7 @@ function GameControlButtonsPanel({
   setGridShake,
 }) {
   const {
-    isGameOver,
+    isGameWon,
     guessCandidate,
     setGuessCandidate,
     submittedGuesses,
@@ -83,7 +83,7 @@ function GameControlButtonsPanel({
           label: "Notification",
           title: "Close Guess",
           description:
-            "You were one guess away from correctly guessing a category!",
+            "You were one word away from correctly guessing a category!",
         });
       }
     }
@@ -92,7 +92,7 @@ function GameControlButtonsPanel({
   return (
     <div className="grid grid-cols-3 gap-4">
       <Button
-        disabled={isGameOver}
+        disabled={isGameWon}
         variant="secondary"
         onClick={() =>
           setShuffledRows(shuffleGameData({ gameData: shuffledRows }))
@@ -103,7 +103,7 @@ function GameControlButtonsPanel({
       </Button>
       <Button
         size="deselectallsize"
-        disabled={isGameOver}
+        disabled={isGameWon}
         variant="secondary"
         onClick={deselectAll}
       >
@@ -113,7 +113,7 @@ function GameControlButtonsPanel({
       <Button
         variant="submit"
         onClick={submitCandidateGuess}
-        disabled={isGameOver || guessCandidate.length !== categorySize}
+        disabled={isGameWon || guessCandidate.length !== categorySize}
       >
         <SendHorizontal className="h-4 w-4 mr-2" strokeWidth={1} />
         <p className="select-none">Submit</p>

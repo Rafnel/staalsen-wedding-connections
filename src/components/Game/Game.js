@@ -2,7 +2,6 @@ import React from "react";
 import { shuffleGameData } from "../../lib/game-helpers";
 import GameGrid from "../GameGrid";
 import NumberOfMistakesDisplay from "../NumberOfMistakesDisplay";
-import GameLostModal from "../modals/GameLostModal";
 import GameWonModal from "../modals/GameWonModal";
 
 import { Separator } from "../ui/separator";
@@ -17,7 +16,7 @@ import ViewResultsModal from "../modals/ViewResultsModal";
 function Game() {
   const { gameData, categorySize, numCategories } =
     React.useContext(PuzzleDataContext);
-  const { submittedGuesses, solvedGameData, isGameOver, isGameWon } =
+  const { submittedGuesses, solvedGameData, isGameWon } =
     React.useContext(GameStatusContext);
 
   const [shuffledRows, setShuffledRows] = React.useState(
@@ -42,7 +41,7 @@ function Game() {
 
   // Handle End Game!
   React.useEffect(() => {
-    if (!isGameOver) {
+    if (!isGameWon) {
       return;
     }
     // extra delay for game won to allow confetti to show
@@ -58,7 +57,7 @@ function Game() {
     }
 
     return () => window.clearTimeout(delayModalOpen);
-  }, [isGameOver]);
+  }, [isGameWon]);
 
   return (
     <>
@@ -67,13 +66,8 @@ function Game() {
       </h3>
 
       <div className={`game-wrapper`}>
-        {isGameOver && isGameWon ? (
+        {isGameWon && (
           <GameWonModal
-            open={isEndGameModalOpen}
-            submittedGuesses={submittedGuesses}
-          />
-        ) : (
-          <GameLostModal
             open={isEndGameModalOpen}
             submittedGuesses={submittedGuesses}
           />
@@ -83,7 +77,7 @@ function Game() {
           shouldGridShake={gridShake}
           setShouldGridShake={setGridShake}
         />
-        {showConfetti && isGameOver && (
+        {showConfetti && isGameWon && (
           <div className="grid place-content-center">
             <ConfettiExplosion
               particleCount={100}
@@ -94,7 +88,7 @@ function Game() {
         )}
         <Separator />
 
-        {!isGameOver ? (
+        {!isGameWon ? (
           <>
             <NumberOfMistakesDisplay />
             <GameControlButtonsPanel

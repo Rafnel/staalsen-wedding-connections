@@ -1,5 +1,4 @@
 import React from "react";
-import { MAX_MISTAKES } from "../../lib/constants";
 import { PuzzleDataContext } from "../PuzzleDataProvider";
 import {
   loadGameStateFromLocalStorage,
@@ -42,7 +41,6 @@ function GameStatusProvider({ children }) {
     return [];
   });
 
-  const [isGameOver, setIsGameOver] = React.useState(false);
   const [isGameWon, setIsGameWon] = React.useState(false);
   const [guessCandidate, setGuessCandidate] = React.useState([]);
 
@@ -51,27 +49,15 @@ function GameStatusProvider({ children }) {
   // use effect to check if game is won
   React.useEffect(() => {
     if (solvedGameData.length === gameData.length) {
-      setIsGameOver(true);
       setIsGameWon(true);
     }
     const gameState = { submittedGuesses, solvedGameData, gameData };
     saveGameStateToLocalStorage(gameState);
   }, [solvedGameData]);
 
-  // use effect to check if all mistakes have been used and end the game accordingly
-  React.useEffect(() => {
-    if (numMistakesUsed >= MAX_MISTAKES) {
-      setIsGameOver(true);
-      setIsGameWon(false);
-    }
-    const gameState = { submittedGuesses, solvedGameData, gameData };
-    saveGameStateToLocalStorage(gameState);
-  }, [submittedGuesses]);
-
   return (
     <GameStatusContext.Provider
       value={{
-        isGameOver,
         isGameWon,
         numMistakesUsed,
         solvedGameData,

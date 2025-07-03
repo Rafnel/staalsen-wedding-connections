@@ -1,10 +1,11 @@
 import React from "react";
-import { puzzleAnswers } from "../../lib/time-utils";
+import { CONNECTION_GAMES } from "../../lib/data";
 
 export const PuzzleDataContext = React.createContext();
 
 function PuzzleDataProvider({ children }) {
-  const [gameData, setGameData] = React.useState(puzzleAnswers);
+  game = CONNECTION_GAMES[0];
+  const [gameData, setGameData] = React.useState(game);
   const categorySize = gameData[0].words.length;
   const numCategories = gameData.length;
   return (

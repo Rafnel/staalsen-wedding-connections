@@ -1,8 +1,6 @@
 import React from "react";
 
 import { generateEmojiGrid } from "../../../lib/game-helpers";
-import CountdownToNextPuzzle from "../../CountdownToNextPuzzle";
-import ShareScoreButton from "../../ShareScoreButton";
 import BaseModal from "../BaseModal";
 import { GameStatusContext } from "../../../providers/GameStatusProvider";
 import { PuzzleDataContext } from "../../../providers/PuzzleDataProvider";
@@ -20,7 +18,6 @@ function ViewResultsModal() {
       }
       initiallyOpen={false}
       showActionButton={false}
-      footerElements={<ShareScoreButton buttonText={"Share Your Score!"} />}
     >
       <div className="flex flex-col place-content-center">
         <p className="text-center font-[600]">
@@ -30,7 +27,6 @@ function ViewResultsModal() {
           {"\n"}
           {generateEmojiGrid(gameData, submittedGuesses)}
         </span>
-        <CountdownToNextPuzzle />
       </div>
     </BaseModal>
   );

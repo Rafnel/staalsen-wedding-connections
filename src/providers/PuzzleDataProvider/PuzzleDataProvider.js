@@ -30,7 +30,7 @@ export const CONNECTION_GAMES = [
 export const PuzzleDataContext = React.createContext();
 
 function PuzzleDataProvider({ children }) {
-  game = CONNECTION_GAMES[0];
+  let game = CONNECTION_GAMES[0];
   const [gameData, setGameData] = React.useState(game);
   const categorySize = gameData[0].words.length;
   const numCategories = gameData.length;

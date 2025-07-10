@@ -96,7 +96,7 @@ function Game() {
     <>
       {playerName && (
         <h2 className="text-lg text-center mt-4 mb-1 font-semibold">
-          Team {playerName}
+          Table {playerName}
         </h2>
       )}
       <h3 className="text-xl text-center mt-1">
@@ -108,6 +108,11 @@ function Game() {
           <GameWonModal
             open={isEndGameModalOpen}
             submittedGuesses={submittedGuesses}
+            onViewLeaderboard={() => {
+              // Find the leaderboard toggle in the parent app and trigger it
+              const event = new CustomEvent('show-leaderboard', { bubbles: true });
+              window.dispatchEvent(event);
+            }}
           />
         )}
         <GameGrid
@@ -136,7 +141,10 @@ function Game() {
             />
           </>
         ) : (
-          <ViewResultsModal />
+          <ViewResultsModal onViewLeaderboard={() => {
+            const event = new CustomEvent('show-leaderboard', { bubbles: true });
+            window.dispatchEvent(event);
+          }} />
         )}
       </div>
     </>

@@ -20,7 +20,7 @@ function GameStatusProvider({ children }) {
     // Prompt for name if not present in local storage
     let name = loadedState.playerName;
     if (!name) {
-      name = window.prompt("Welcome! Please enter your team's name for the leaderboard:", "");
+      name = window.prompt("Welcome! Please enter your table's name for the leaderboard:", "");
       if (name && name.trim()) {
         name = name.trim();
         setPlayerName(name);

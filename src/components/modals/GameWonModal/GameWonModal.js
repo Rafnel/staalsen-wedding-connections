@@ -4,7 +4,7 @@ import BaseModal from "../BaseModal";
 import { generateEmojiGrid } from "../../../lib/game-helpers";
 import { PuzzleDataContext } from "../../../providers/PuzzleDataProvider";
 
-function GameWonModal({ open, submittedGuesses }) {
+function GameWonModal({ open, submittedGuesses, onViewLeaderboard }) {
   const { gameData } = React.useContext(PuzzleDataContext);
 
   return (
@@ -13,13 +13,23 @@ function GameWonModal({ open, submittedGuesses }) {
       initiallyOpen={open}
       showActionButton={false}
     >
-      <p>{"Great job!"}</p>
+      <div>
+        <span>{"Great job!"}</span>
+      </div>
       <div className="justify-center">
         {/* the whitespace: pre style makes the emoji grid appear with new lines character */}
         <span className="text-center whitespace-pre">
           {"\n"}
           {generateEmojiGrid(gameData, submittedGuesses)}
         </span>
+      </div>
+      <div className="flex justify-center mt-4">
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={onViewLeaderboard}
+        >
+          View Leaderboard
+        </button>
       </div>
     </BaseModal>
   );

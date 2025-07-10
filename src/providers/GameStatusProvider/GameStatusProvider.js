@@ -10,32 +10,41 @@ import {
 } from "../../lib/game-helpers";
 export const GameStatusContext = React.createContext();
 
+
 function GameStatusProvider({ children }) {
   const { gameData } = React.useContext(PuzzleDataContext);
   const [submittedGuesses, setSubmittedGuesses] = React.useState([]);
+  const [playerName, setPlayerName] = React.useState("");
   const [solvedGameData, setSolvedGameData] = React.useState(() => {
-    const loadedState = loadGameStateFromLocalStorage();
-    console.log("checking game state!", {
-      loadedState: loadedState,
-      gd1: gameData,
-      gd2: loadedState?.gameData,
-    });
-    if (!isGameDataEquivalent({ gd1: gameData, gd2: loadedState?.gameData })) {
+    let loadedState = loadGameStateFromLocalStorage() || {};
+    // Prompt for name if not present in local storage
+    let name = loadedState.playerName;
+    if (!name) {
+      name = window.prompt("Welcome! Please enter your team's name for the leaderboard:", "");
+      if (name && name.trim()) {
+        name = name.trim();
+        setPlayerName(name);
+        loadedState = { ...loadedState, playerName: name };
+        saveGameStateToLocalStorage(loadedState);
+      }
+    } else {
+      setPlayerName(name);
+    }
+    if (!isGameDataEquivalent({ gd1: gameData, gd2: loadedState.gameData })) {
       return [];
     }
     if (
       !isGuessesFromGame({
         gameData,
-        submittedGuesses: loadedState?.submittedGuesses,
+        submittedGuesses: loadedState.submittedGuesses,
       })
     ) {
       return [];
     }
-    if (Array.isArray(loadedState?.submittedGuesses)) {
+    if (Array.isArray(loadedState.submittedGuesses)) {
       setSubmittedGuesses(loadedState.submittedGuesses);
     }
-
-    if (Array.isArray(loadedState?.solvedGameData)) {
+    if (Array.isArray(loadedState.solvedGameData)) {
       return loadedState.solvedGameData;
     }
     return [];
@@ -51,9 +60,16 @@ function GameStatusProvider({ children }) {
     if (solvedGameData.length === gameData.length) {
       setIsGameWon(true);
     }
-    const gameState = { submittedGuesses, solvedGameData, gameData };
+    // Always include playerName in saved state
+    const gameState = { submittedGuesses, solvedGameData, gameData, playerName };
     saveGameStateToLocalStorage(gameState);
-  }, [solvedGameData]);
+  }, [solvedGameData, playerName]);
+
+  // Persist submittedGuesses to localStorage whenever it changes
+  React.useEffect(() => {
+    const gameState = { submittedGuesses, solvedGameData, gameData, playerName };
+    saveGameStateToLocalStorage(gameState);
+  }, [submittedGuesses]);
 
   return (
     <GameStatusContext.Provider
@@ -66,6 +82,8 @@ function GameStatusProvider({ children }) {
         setSubmittedGuesses,
         guessCandidate,
         setGuessCandidate,
+        playerName,
+        setPlayerName,
       }}
     >
       {children}

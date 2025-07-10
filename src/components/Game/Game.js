@@ -16,7 +16,7 @@ import ViewResultsModal from "../modals/ViewResultsModal";
 function Game() {
   const { gameData, categorySize, numCategories } =
     React.useContext(PuzzleDataContext);
-  const { submittedGuesses, solvedGameData, isGameWon } =
+  const { submittedGuesses, solvedGameData, isGameWon, playerName } =
     React.useContext(GameStatusContext);
 
   const [shuffledRows, setShuffledRows] = React.useState(
@@ -61,7 +61,12 @@ function Game() {
 
   return (
     <>
-      <h3 className="text-xl text-center mt-4">
+      {playerName && (
+        <h2 className="text-lg text-center mt-4 mb-1 font-semibold">
+          Team {playerName}
+        </h2>
+      )}
+      <h3 className="text-xl text-center mt-1">
         Create {numCategories} groups of {categorySize}
       </h3>
 

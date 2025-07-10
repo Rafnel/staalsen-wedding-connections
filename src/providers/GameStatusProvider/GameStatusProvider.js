@@ -55,21 +55,32 @@ function GameStatusProvider({ children }) {
 
   const numMistakesUsed = submittedGuesses.length - solvedGameData.length;
 
+
+  // Maintain scoreSubmitted in state and localStorage
+  const [scoreSubmitted, setScoreSubmitted] = React.useState(() => {
+    try {
+      const gameState = loadGameStateFromLocalStorage();
+      return !!gameState?.scoreSubmitted;
+    } catch {
+      return false;
+    }
+  });
+
   // use effect to check if game is won
   React.useEffect(() => {
     if (solvedGameData.length === gameData.length) {
       setIsGameWon(true);
     }
-    // Always include playerName in saved state
-    const gameState = { submittedGuesses, solvedGameData, gameData, playerName };
+    // Always include playerName and scoreSubmitted in saved state
+    const gameState = { submittedGuesses, solvedGameData, gameData, playerName, scoreSubmitted };
     saveGameStateToLocalStorage(gameState);
-  }, [solvedGameData, playerName]);
+  }, [solvedGameData, playerName, scoreSubmitted]);
 
   // Persist submittedGuesses to localStorage whenever it changes
   React.useEffect(() => {
-    const gameState = { submittedGuesses, solvedGameData, gameData, playerName };
+    const gameState = { submittedGuesses, solvedGameData, gameData, playerName, scoreSubmitted };
     saveGameStateToLocalStorage(gameState);
-  }, [submittedGuesses]);
+  }, [submittedGuesses, scoreSubmitted]);
 
   return (
     <GameStatusContext.Provider
@@ -84,6 +95,8 @@ function GameStatusProvider({ children }) {
         setGuessCandidate,
         playerName,
         setPlayerName,
+        scoreSubmitted,
+        setScoreSubmitted,
       }}
     >
       {children}

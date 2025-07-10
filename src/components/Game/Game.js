@@ -25,6 +25,15 @@ function Game() {
   const [isEndGameModalOpen, setisEndGameModalOpen] = React.useState(false);
   const [gridShake, setGridShake] = React.useState(false);
   const [showConfetti, setShowConfetti] = React.useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = React.useState(() => {
+    // Check localStorage for scoreSubmitted flag
+    try {
+      const gameState = JSON.parse(window.localStorage.getItem('gameState'));
+      return !!gameState?.scoreSubmitted;
+    } catch {
+      return false;
+    }
+  });
 
   // use effect to update Game Grid after a row has been correctly solved
   React.useEffect(() => {
@@ -54,10 +63,34 @@ function Game() {
 
     if (isGameWon) {
       setShowConfetti(true);
+      // Submit to leaderboard only if not already submitted
+      if (!scoreSubmitted) {
+        const mistakes = submittedGuesses.length - solvedGameData.length;
+        if (playerName && typeof mistakes === 'number' && mistakes >= 0) {
+          fetch('/.netlify/functions/leaderboard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: playerName, mistakes })
+          })
+            .then(() => {
+              setScoreSubmitted(true);
+              // Save flag in localStorage
+              try {
+                const gameState = JSON.parse(window.localStorage.getItem('gameState')) || {};
+                gameState.scoreSubmitted = true;
+                window.localStorage.setItem('gameState', JSON.stringify(gameState));
+              } catch {}
+            })
+            .catch((err) => {
+              // Optionally handle error (e.g., show a message)
+              console.error('Failed to submit to leaderboard:', err);
+            });
+        }
+      }
     }
 
     return () => window.clearTimeout(delayModalOpen);
-  }, [isGameWon]);
+  }, [isGameWon, scoreSubmitted, playerName, submittedGuesses, solvedGameData]);
 
   return (
     <>

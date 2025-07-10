@@ -17,7 +17,19 @@ function writeLeaderboard(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 exports.handler = async function(event, context) {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: CORS_HEADERS,
+      body: 'OK',
+    };
+  }
   if (event.httpMethod === 'GET') {
     const leaderboard = readLeaderboard();
     leaderboard.sort((a, b) => {
@@ -32,7 +44,7 @@ exports.handler = async function(event, context) {
     return {
       statusCode: 200,
       body: JSON.stringify(leaderboard),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
     };
   }
 
@@ -44,7 +56,7 @@ exports.handler = async function(event, context) {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Invalid JSON' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       };
     }
     const { name, mistakes, timeUsed } = body;
@@ -52,7 +64,7 @@ exports.handler = async function(event, context) {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Name, mistakes, and timeUsed are required.' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       };
     }
     const leaderboard = readLeaderboard();
@@ -61,7 +73,7 @@ exports.handler = async function(event, context) {
       return {
         statusCode: 409,
         body: JSON.stringify({ error: 'A score for this name already exists.' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       };
     }
     leaderboard.push({ name, mistakes, timeUsed, timestamp: Date.now() });
@@ -69,7 +81,7 @@ exports.handler = async function(event, context) {
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
     };
   }
 

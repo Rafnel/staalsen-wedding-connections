@@ -1,5 +1,5 @@
 
-const { getStore, connectLambda } = require('@netlify/blobs');
+import { getStore, connectLambda } from '@netlify/blobs';
 const BLOB_KEY = 'leaderboard-store';
 const LEADERBOARD = 'leaderboard';
 
@@ -8,7 +8,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-exports.handler = async function(event, context) {
+export async function handler(event, context) {
   connectLambda(event);
   
   const store = getStore(BLOB_KEY);
@@ -122,4 +122,4 @@ exports.handler = async function(event, context) {
     body: JSON.stringify({ error: 'Method Not Allowed' }),
     headers: { 'Content-Type': 'application/json' }
   };
-};
+}

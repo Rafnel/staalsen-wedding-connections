@@ -20,7 +20,15 @@ function writeLeaderboard(data) {
 exports.handler = async function(event, context) {
   if (event.httpMethod === 'GET') {
     const leaderboard = readLeaderboard();
-    leaderboard.sort((a, b) => a.mistakes - b.mistakes || a.timestamp - b.timestamp);
+    leaderboard.sort((a, b) => {
+      if (a.mistakes !== b.mistakes) return a.mistakes - b.mistakes;
+      // tiebreaker: less timeUsed is better
+      if (typeof a.timeUsed === 'number' && typeof b.timeUsed === 'number') {
+        return a.timeUsed - b.timeUsed;
+      }
+      // fallback: earliest timestamp
+      return a.timestamp - b.timestamp;
+    });
     return {
       statusCode: 200,
       body: JSON.stringify(leaderboard),
@@ -39,11 +47,11 @@ exports.handler = async function(event, context) {
         headers: { 'Content-Type': 'application/json' }
       };
     }
-    const { name, mistakes } = body;
-    if (!name || typeof mistakes !== 'number') {
+    const { name, mistakes, timeUsed } = body;
+    if (!name || typeof mistakes !== 'number' || typeof timeUsed !== 'number') {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Name and mistakes are required.' }),
+        body: JSON.stringify({ error: 'Name, mistakes, and timeUsed are required.' }),
         headers: { 'Content-Type': 'application/json' }
       };
     }
@@ -56,7 +64,7 @@ exports.handler = async function(event, context) {
         headers: { 'Content-Type': 'application/json' }
       };
     }
-    leaderboard.push({ name, mistakes, timestamp: Date.now() });
+    leaderboard.push({ name, mistakes, timeUsed, timestamp: Date.now() });
     writeLeaderboard(leaderboard);
     return {
       statusCode: 200,

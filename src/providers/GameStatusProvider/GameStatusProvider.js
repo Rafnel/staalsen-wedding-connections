@@ -24,11 +24,18 @@ function GameStatusProvider({ children }) {
       if (name && name.trim()) {
         name = name.trim();
         setPlayerName(name);
-        loadedState = { ...loadedState, playerName: name };
+        // Record start timestamp if not present
+        const now = Date.now();
+        loadedState = { ...loadedState, playerName: name, startTimestamp: now };
         saveGameStateToLocalStorage(loadedState);
       }
     } else {
       setPlayerName(name);
+      // If name exists but no startTimestamp, set it (for backward compatibility)
+      if (!loadedState.startTimestamp) {
+        loadedState.startTimestamp = Date.now();
+        saveGameStateToLocalStorage(loadedState);
+      }
     }
     if (!isGameDataEquivalent({ gd1: gameData, gd2: loadedState.gameData })) {
       return [];
@@ -68,17 +75,39 @@ function GameStatusProvider({ children }) {
 
   // use effect to check if game is won
   React.useEffect(() => {
+    let loadedState = loadGameStateFromLocalStorage() || {};
     if (solvedGameData.length === gameData.length) {
       setIsGameWon(true);
+      // Record completion timestamp if not already set
+      if (!loadedState.completionTimestamp) {
+        loadedState.completionTimestamp = Date.now();
+      }
     }
     // Always include playerName and scoreSubmitted in saved state
-    const gameState = { submittedGuesses, solvedGameData, gameData, playerName, scoreSubmitted };
+    const gameState = {
+      submittedGuesses,
+      solvedGameData,
+      gameData,
+      playerName,
+      scoreSubmitted,
+      startTimestamp: loadedState.startTimestamp,
+      completionTimestamp: loadedState.completionTimestamp,
+    };
     saveGameStateToLocalStorage(gameState);
   }, [solvedGameData, playerName, scoreSubmitted]);
 
   // Persist submittedGuesses to localStorage whenever it changes
   React.useEffect(() => {
-    const gameState = { submittedGuesses, solvedGameData, gameData, playerName, scoreSubmitted };
+    let loadedState = loadGameStateFromLocalStorage() || {};
+    const gameState = {
+      submittedGuesses,
+      solvedGameData,
+      gameData,
+      playerName,
+      scoreSubmitted,
+      startTimestamp: loadedState.startTimestamp,
+      completionTimestamp: loadedState.completionTimestamp,
+    };
     saveGameStateToLocalStorage(gameState);
   }, [submittedGuesses, scoreSubmitted]);
 

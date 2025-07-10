@@ -66,11 +66,19 @@ function Game() {
       // Submit to leaderboard only if not already submitted
       if (!scoreSubmitted) {
         const mistakes = submittedGuesses.length - solvedGameData.length;
-        if (playerName && typeof mistakes === 'number' && mistakes >= 0) {
+        // Get time used from localStorage
+        let timeUsed = null;
+        try {
+          const gameState = JSON.parse(window.localStorage.getItem('gameState'));
+          if (gameState?.startTimestamp && gameState?.completionTimestamp) {
+            timeUsed = gameState.completionTimestamp - gameState.startTimestamp;
+          }
+        } catch {}
+        if (playerName && typeof mistakes === 'number' && mistakes >= 0 && timeUsed !== null) {
           fetch('/.netlify/functions/leaderboard', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: playerName, mistakes })
+            body: JSON.stringify({ name: playerName, mistakes, timeUsed })
           })
             .then(() => {
               setScoreSubmitted(true);

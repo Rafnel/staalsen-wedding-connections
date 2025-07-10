@@ -1,0 +1,73 @@
+const fs = require('fs');
+const path = require('path');
+
+const DATA_FILE = path.join(__dirname, 'leaderboard.json');
+
+function readLeaderboard() {
+  if (!fs.existsSync(DATA_FILE)) return [];
+  try {
+    const data = fs.readFileSync(DATA_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeLeaderboard(data) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+exports.handler = async function(event, context) {
+  if (event.httpMethod === 'GET') {
+    const leaderboard = readLeaderboard();
+    leaderboard.sort((a, b) => a.mistakes - b.mistakes || a.timestamp - b.timestamp);
+    return {
+      statusCode: 200,
+      body: JSON.stringify(leaderboard),
+      headers: { 'Content-Type': 'application/json' }
+    };
+  }
+
+  if (event.httpMethod === 'POST') {
+    let body;
+    try {
+      body = JSON.parse(event.body);
+    } catch (e) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Invalid JSON' }),
+        headers: { 'Content-Type': 'application/json' }
+      };
+    }
+    const { name, mistakes } = body;
+    if (!name || typeof mistakes !== 'number') {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Name and mistakes are required.' }),
+        headers: { 'Content-Type': 'application/json' }
+      };
+    }
+    const leaderboard = readLeaderboard();
+    const nameExists = leaderboard.some(entry => entry.name.trim().toLowerCase() === name.trim().toLowerCase());
+    if (nameExists) {
+      return {
+        statusCode: 409,
+        body: JSON.stringify({ error: 'A score for this name already exists.' }),
+        headers: { 'Content-Type': 'application/json' }
+      };
+    }
+    leaderboard.push({ name, mistakes, timestamp: Date.now() });
+    writeLeaderboard(leaderboard);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true }),
+      headers: { 'Content-Type': 'application/json' }
+    };
+  }
+
+  return {
+    statusCode: 405,
+    body: JSON.stringify({ error: 'Method Not Allowed' }),
+    headers: { 'Content-Type': 'application/json' }
+  };
+};

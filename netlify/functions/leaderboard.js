@@ -1,21 +1,7 @@
-const fs = require('fs');
-const path = require('path');
 
-const DATA_FILE = path.join(__dirname, 'leaderboard.json');
-
-function readLeaderboard() {
-  if (!fs.existsSync(DATA_FILE)) return [];
-  try {
-    const data = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    return [];
-  }
-}
-
-function writeLeaderboard(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-}
+const { getStore, connectLambda } = require('@netlify/blobs');
+const BLOB_KEY = 'leaderboard-store';
+const LEADERBOARD = 'leaderboard';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -23,6 +9,9 @@ const CORS_HEADERS = {
 };
 
 exports.handler = async function(event, context) {
+  connectLambda(event);
+  
+  const store = getStore(BLOB_KEY);
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -31,14 +20,18 @@ exports.handler = async function(event, context) {
     };
   }
   if (event.httpMethod === 'GET') {
-    const leaderboard = readLeaderboard();
+    let leaderboard = [];
+    try {
+      const blob = await store.get(LEADERBOARD);
+      if (blob) {
+        leaderboard = JSON.parse(blob);
+      }
+    } catch {}
     leaderboard.sort((a, b) => {
       if (a.mistakes !== b.mistakes) return a.mistakes - b.mistakes;
-      // tiebreaker: less timeUsed is better
       if (typeof a.timeUsed === 'number' && typeof b.timeUsed === 'number') {
         return a.timeUsed - b.timeUsed;
       }
-      // fallback: earliest timestamp
       return a.timestamp - b.timestamp;
     });
     return {
@@ -67,7 +60,14 @@ exports.handler = async function(event, context) {
         headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       };
     }
-    const leaderboard = readLeaderboard();
+    // Read, update, and write leaderboard using Netlify Blobs Store
+    let leaderboard = [];
+    try {
+      const blob = await store.get(LEADERBOARD);
+      if (blob) {
+        leaderboard = JSON.parse(blob);
+      }
+    } catch {}
     const nameExists = leaderboard.some(entry => entry.name.trim().toLowerCase() === name.trim().toLowerCase());
     if (nameExists) {
       return {
@@ -76,8 +76,40 @@ exports.handler = async function(event, context) {
         headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       };
     }
-    leaderboard.push({ name, mistakes, timeUsed, timestamp: Date.now() });
-    writeLeaderboard(leaderboard);
+    const newEntry = { name, mistakes, timeUsed, timestamp: Date.now() };
+    leaderboard.push(newEntry);
+
+    // Basic retry mechanism for concurrent writes
+    const MAX_RETRIES = 3;
+    let success = false;
+    let retries = 0;
+    while (!success && retries < MAX_RETRIES) {
+      await store.set(LEADERBOARD, JSON.stringify(leaderboard));
+      // Re-read and check if our entry is present
+      let verifyLeaderboard = [];
+      try {
+        const verifyBlob = await store.get(LEADERBOARD);
+        if (verifyBlob) {
+          verifyLeaderboard = JSON.parse(verifyBlob);
+        }
+      } catch {}
+      const found = verifyLeaderboard.some(entry => entry.name.trim().toLowerCase() === name.trim().toLowerCase());
+      if (found) {
+        success = true;
+      } else {
+        // Re-read, re-apply our entry, and try again
+        leaderboard = verifyLeaderboard;
+        leaderboard.push(newEntry);
+        retries++;
+      }
+    }
+    if (!success) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to save entry after several attempts. Please try again.' }),
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      };
+    }
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true }),

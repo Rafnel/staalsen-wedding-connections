@@ -78,7 +78,7 @@ function Game() {
           }
         } catch {}
         if (teamName && tableNumber && typeof mistakes === 'number' && mistakes >= 0 && timeUsed !== null) {
-          submission = JSON.stringify({ name: teamName, mistakes: mistakes, timeUsed: timeUsed, tableNumber: tableNumber });
+          let submission = JSON.stringify({ name: teamName, mistakes: mistakes, timeUsed: timeUsed, tableNumber: tableNumber });
           console.log("Submitting to leaderboard:", submission);
           fetch('/.netlify/functions/leaderboard', {
             method: 'POST',

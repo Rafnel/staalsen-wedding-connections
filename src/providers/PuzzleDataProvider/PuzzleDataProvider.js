@@ -13,14 +13,13 @@ export const CONNECTION_GAMES = [
       difficulty: 2,
     },
     {
-      category: "Parts of Titles to Our Favorite Movies",
-      words: ["Monty", "Pirates", "Pride", "Princess"],
-      difficulty: 3,
-    },
-
-    {
       category: "Unity Symbolism During Wedding Ceremony",
       words: ["Candle", "Knot", "Ring", "Sand"],
+      difficulty: 3,
+    },
+    {
+      category: "Parts of Titles to Our Favorite Movies",
+      words: ["Monty", "Pirates", "Pride", "Princess"],
       difficulty: 4,
     },
   ],

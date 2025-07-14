@@ -14,7 +14,7 @@ export const CONNECTION_GAMES = [
     },
     {
       category: "Unity Symbolism During Wedding Ceremony",
-      words: ["Candle", "Knot", "Ring", "Sand"],
+      words: ["Candle", "Knot", "Rings", "Sand"],
       difficulty: 3,
     },
     {

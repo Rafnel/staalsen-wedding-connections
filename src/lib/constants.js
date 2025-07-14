@@ -1,1 +1,1 @@
-export const GAME_TITLE = "Staalsen Connections";
+export const GAME_TITLE = "Connections";

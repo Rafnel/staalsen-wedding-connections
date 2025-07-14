@@ -35,6 +35,10 @@ function Game() {
     }
   });
 
+  // Get table number and team name from localStorage at the top of the component
+  const tableNumber = window.localStorage.getItem('tableNumber');
+  const teamName = window.localStorage.getItem('teamName');
+
   // use effect to update Game Grid after a row has been correctly solved
   React.useEffect(() => {
     const categoriesToRemoveFromRows = solvedGameData.map(
@@ -57,7 +61,6 @@ function Game() {
     const modalDelay = isGameWon ? 2000 : 250;
     const delayModalOpen = window.setTimeout(() => {
       setisEndGameModalOpen(true);
-      //unmount confetti after modal opens
       setShowConfetti(false);
     }, modalDelay);
 
@@ -74,11 +77,13 @@ function Game() {
             timeUsed = gameState.completionTimestamp - gameState.startTimestamp;
           }
         } catch {}
-        if (playerName && typeof mistakes === 'number' && mistakes >= 0 && timeUsed !== null) {
+        if (teamName && tableNumber && typeof mistakes === 'number' && mistakes >= 0 && timeUsed !== null) {
+          submission = JSON.stringify({ name: teamName, mistakes: mistakes, timeUsed: timeUsed, tableNumber: tableNumber });
+          console.log("Submitting to leaderboard:", submission);
           fetch('/.netlify/functions/leaderboard', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: playerName, mistakes, timeUsed })
+            body: submission
           })
             .then(() => {
               setScoreSubmitted(true);
@@ -98,13 +103,13 @@ function Game() {
     }
 
     return () => window.clearTimeout(delayModalOpen);
-  }, [isGameWon, scoreSubmitted, playerName, submittedGuesses, solvedGameData]);
+  }, [isGameWon, scoreSubmitted, submittedGuesses, solvedGameData, tableNumber, teamName]);
 
   return (
     <>
-      {playerName && (
+      {tableNumber && playerName && (
         <h2 className="text-lg text-center mt-4 mb-1 font-semibold">
-          Table {playerName}
+          Table: {tableNumber}, Team Name: {playerName}
         </h2>
       )}
       <h3 className="text-xl text-center mt-1">

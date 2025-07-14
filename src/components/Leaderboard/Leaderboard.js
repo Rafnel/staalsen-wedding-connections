@@ -33,12 +33,6 @@ function Leaderboard({ onBack }) {
   return (
     <div className="max-w-lg mx-auto mt-8 p-4 bg-white rounded shadow">
       <h2 className="text-2xl font-bold text-center mb-4">Leaderboard</h2>
-      <button
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={onBack}
-      >
-        Back to Game
-      </button>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
@@ -47,7 +41,7 @@ function Leaderboard({ onBack }) {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="border-b p-2 text-left">Table Name</th>
+              <th className="border-b p-2 text-left">Team Name (Table #)</th>
               <th className="border-b p-2 text-left">Mistakes</th>
               <th className="border-b p-2 text-left">Time</th>
             </tr>
@@ -60,7 +54,13 @@ function Leaderboard({ onBack }) {
               else if (idx === 2) medal = "🥉 ";
               return (
                 <tr key={entry.name + entry.mistakes + idx}>
-                  <td className="border-b p-2">{medal}{entry.name}</td>
+                  <td className="border-b p-2 font-mono">
+                    {medal}
+                    <span style={{fontWeight: 400}}>{entry.name}</span>
+                    <span style={{color: '#888', margin: '0 8px'}}>
+                      (Table {entry.tableNumber})
+                    </span>
+                  </td>
                   <td className="border-b p-2">{entry.mistakes}</td>
                   <td className="border-b p-2">{formatTime(entry.timeUsed)}</td>
                 </tr>

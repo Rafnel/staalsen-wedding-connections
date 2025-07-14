@@ -35,7 +35,7 @@ function InfoModal() {
         <AccordionItem value="item-3">
           <AccordionTrigger>How Many Tries Do I Get?</AccordionTrigger>
           <AccordionContent>
-            You have infinite tries but you will be ranked on the leaderboard by the number of mistakes you make. The fewer mistakes, the better your score!
+            You have infinite tries but you will be ranked on the leaderboard by the number of mistakes you make. The fewer mistakes, the better your score! Ties will be broken by time taken to complete the puzzle.
           </AccordionContent>
         </AccordionItem>
       </Accordion>

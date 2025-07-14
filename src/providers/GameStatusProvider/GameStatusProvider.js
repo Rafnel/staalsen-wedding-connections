@@ -15,27 +15,32 @@ function GameStatusProvider({ children }) {
   const { gameData } = React.useContext(PuzzleDataContext);
   const [submittedGuesses, setSubmittedGuesses] = React.useState([]);
   const [playerName, setPlayerName] = React.useState("");
-  const [solvedGameData, setSolvedGameData] = React.useState(() => {
+  // Get playerName from localStorage (set by onboarding)
+  React.useEffect(() => {
     let loadedState = loadGameStateFromLocalStorage() || {};
-    // Prompt for name if not present in local storage
-    let name = loadedState.playerName;
-    if (!name) {
-      name = window.prompt("Welcome! Please enter your table's name for the leaderboard:", "");
-      if (name && name.trim()) {
-        name = name.trim();
-        setPlayerName(name);
-        // Record start timestamp if not present
-        const now = Date.now();
-        loadedState = { ...loadedState, playerName: name, startTimestamp: now };
+    let name = window.localStorage.getItem('teamName');
+    if (name && name.trim()) {
+      setPlayerName(name.trim());
+      // Record start timestamp if not present
+      if (!loadedState.startTimestamp) {
+        loadedState = { ...loadedState, playerName: name.trim(), startTimestamp: Date.now() };
         saveGameStateToLocalStorage(loadedState);
       }
-    } else {
-      setPlayerName(name);
-      // If name exists but no startTimestamp, set it (for backward compatibility)
+    } else if (loadedState.playerName) {
+      setPlayerName(loadedState.playerName);
       if (!loadedState.startTimestamp) {
         loadedState.startTimestamp = Date.now();
         saveGameStateToLocalStorage(loadedState);
       }
+    }
+  }, []);
+
+  const [solvedGameData, setSolvedGameData] = React.useState(() => {
+    let loadedState = loadGameStateFromLocalStorage() || {};
+    // Use localStorage for playerName
+    let name = window.localStorage.getItem('teamName') || loadedState.playerName;
+    if (name && name.trim()) {
+      loadedState.playerName = name.trim();
     }
     if (!isGameDataEquivalent({ gd1: gameData, gd2: loadedState.gameData })) {
       return [];
